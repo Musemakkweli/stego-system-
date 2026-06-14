@@ -12,3 +12,25 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  body {
+    padding: 0;
+  }
+  
+  /* Stack grid columns on mobile */
+  div[style*="gridTemplateColumns: '1fr 1fr'"] {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+  }
+  
+  /* Adjust font sizes for mobile */
+  h1 {
+    font-size: 28px !important;
+  }
+  
+  h3 {
+    font-size: 16px !important;
+  }
+}
