@@ -1,4 +1,3 @@
-/* eslint-disable no-unused-vars */
 import React, { useState, useRef } from 'react';
 
 function App() {
@@ -12,7 +11,6 @@ function App() {
   const [fileToHideUrl, setFileToHideUrl] = useState('');
   const [extractedData, setExtractedData] = useState('');
   const [extractedImageUrl, setExtractedImageUrl] = useState('');
-  const [extractedImageName, setExtractedImageName] = useState('');
   const [extractedHiddenFileUrl, setExtractedHiddenFileUrl] = useState('');
   const [extractedHiddenFileName, setExtractedHiddenFileName] = useState('');
   const [extractedHiddenFileType, setExtractedHiddenFileType] = useState('');
@@ -52,7 +50,11 @@ function App() {
 
   const addLog = (message, type = 'info') => {
     const timestamp = new Date().toLocaleTimeString();
-    setActivityLog(prev => [{ timestamp, message, type }, ...prev]);
+    setActivityLog(prev => {
+      const updated = [{ timestamp, message, type }, ...prev];
+      // Keep only last 50 logs to prevent memory leaks
+      return updated.slice(0, 50);
+    });
   };
 
   const getPasswordStrength = (password) => {
@@ -120,7 +122,7 @@ function App() {
   const binaryToText = (binary) => {
     let text = '';
     for (let i = 0; i < binary.length; i += 16) {
-      const chunk = binary.substr(i, 16);
+      const chunk = binary.substring(i, i + 16);
       if (chunk === '0000000000000000') break;
       const charCode = parseInt(chunk, 2);
       if (charCode !== 0) text += String.fromCharCode(charCode);
@@ -482,7 +484,6 @@ function App() {
     const previewReader = new FileReader();
     previewReader.onload = (e) => {
       setExtractedImageUrl(e.target.result);
-      setExtractedImageName(file.name);
     };
     previewReader.readAsDataURL(file);
     
@@ -570,10 +571,15 @@ function App() {
   };
 
   const handlePasteEditText = async () => {
-    const text = await navigator.clipboard.readText();
-    setEditTextContent(text);
-    setIsEncrypted(false);
-    addLog('Text pasted', 'info');
+    try {
+      const text = await navigator.clipboard.readText();
+      setEditTextContent(text);
+      setIsEncrypted(false);
+      addLog('Text pasted', 'info');
+    } catch (error) {
+      addLog('Clipboard access denied', 'error');
+      alert('Unable to read clipboard. Please paste manually.');
+    }
   };
 
   const handleClearEditText = () => {
@@ -917,8 +923,8 @@ function App() {
         </div>
 
         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '15px', marginTop: '20px' }}>
-          <button style={blackButton} onClick={() => alert('Close')}>Close</button>
-          <button style={coloredButton} onClick={() => alert('Exit')}>Exit</button>
+          <button style={blackButton} onClick={() => window.scrollTo(0, 0)}>Top</button>
+          <button style={coloredButton} onClick={() => { if (window.confirm('Clear all data?')) { setCarrierImageUrl(''); setEditTextContent(''); setFileToHideContent(''); setStegoImageUrl(null); setExtractedData(''); setExtractedImageUrl(''); setExtractedHiddenFileUrl(''); setActivityLog([]); addLog('All data cleared', 'info'); } }}>Clear All</button>
           <button style={blackButton} onClick={openHelp}>Help</button>
         </div>
       </div>
